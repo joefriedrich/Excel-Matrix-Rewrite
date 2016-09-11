@@ -22,7 +22,9 @@ class Company:
 		self.emails = self.matrix.get_sheet_by_name("Names and Email")
 		self.vacations = self.matrix.get_sheet_by_name("OnHoliday")
 		self.regions = self.load_regions()
-		self.role_lookup = self.load_lookup()
+		self.role_lookup = self.load_roles()
+		self.email_lookup = self.load_emails()
+		self.vacation_lookup = self.load_vacations()
 	
 	def load_regions(self):
 		header_text = []
@@ -56,7 +58,7 @@ class Company:
 			Otherwise, only grabs the first approver it finds.
 		'''
 	
-	def load_lookup(self):
+	def load_roles(self):
 		print('Loading lookup dictionary...')
 		role = namedtuple('role',
 						  'name description approvers')
@@ -77,6 +79,17 @@ class Company:
 			Region was not included, because we can get that from
 				the length of the list of role approvers (when greater than 1).
 		'''
+
+	def load_emails(self):
+		return
+	'''
+	'''
+
+	def load_vacations(self):
+		return
+	'''
+	'''
+
 	def check_and_sort_roles(self, user_input, user_region):
 		roles_and_approvers = []
 		for role in user_input:
@@ -86,12 +99,12 @@ class Company:
 					if find_this.group() == row.name:
 						if len(row.approvers) > 1:
 							roles_and_approvers.append((row.name,
-														row.description, 
-														row.approvers[user_region]))
+											row.description, 
+											row.approvers[user_region]))
 						else:
 							roles_and_approvers.append((row.name, 
-														row.description, 
-														row.approvers[0]))
+											row.description, 
+											row.approvers[0]))
 		return sorted(roles_and_approvers, key = lambda entry: entry[2])
 		'''
 			Takes a list user_roles and an int user_region.
@@ -101,7 +114,11 @@ class Company:
 			If it is a Regional role, the lenght of appovers will be > 1.
 				Collects tuples (name, description, approver).
 			Returns the list of tuples sorted by approver name.
-		'''	
+		'''
+
+def vacation_check(name):
+	return
+
 #-------------------------------------------------------------------------------
 def get_menu(list_of_things):
 	menu_number = 0
@@ -143,10 +160,7 @@ def get_role_input():
 		This is just a placeholder for user input that is not in the form
 			of get_menu_input.
 	'''
-	
-def vacation_check(name):
-	return
-	
+
 def output_to_screen_and_clipboard(output, company):
 	current_approver = ''
 	approver_emails = ''
@@ -171,15 +185,15 @@ def output_to_screen_and_clipboard(output, company):
 
 print('Loading companies')
 company1 = Company('Company1',
-			openpyxl.load_workbook(r'matrixCompany1.xlsx'),
+			openpyxl.load_workbook(r'matrixCompany1.xlsm'),
 			re.compile(r'\S+'), #UPDATE!  letter+ until : or _ then anything until whitespace
 			['ProdC1', 'QaC1', 'ProdC1/QaC1', 'DevC1', 'QaC1/DevC1'])
 company2 = Company('Company2',
-			openpyxl.load_workbook(r'matrixCompany2.xlsx'),
+			openpyxl.load_workbook(r'matrixCompany2.xlsm'),
 			re.compile(r'Z:\S{4}:\S{7}:\S{4}:\S'),
 			['ProdC2', 'QaC2', 'ProdC2/QaC2', 'DevC2', 'QaC1/DevC2'])
 company3 = Company('Company3',
-			openpyxl.load_workbook(r'matrixCompany3.xlsx'),
+			openpyxl.load_workbook(r'matrixCompany3.xlsm'),
 			re.compile(r'\S+'), #same as company1
 			['ProdC3', 'QaC3', 'ProdC3/QaC3', 'DevC3', 'QaC3/DevC3'])
 
@@ -188,7 +202,7 @@ list_companies = [company1, company2, company3]
 list_company_names = [company.name for company in list_companies]
 
 list_single_approver_clients = [(),
-								()]
+				()]
 			
 #Begin Program
 while (True):	
