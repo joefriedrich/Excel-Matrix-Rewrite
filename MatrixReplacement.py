@@ -11,7 +11,7 @@ from sys import stdin
 from warnings import simplefilter
 from collections import namedtuple
 
-#-------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------
 class Company:
 	def __init__(self, name, matrix, regex, clients):
 		self.name = name
@@ -23,8 +23,8 @@ class Company:
 		self.vacations = self.matrix.get_sheet_by_name("OnHoliday")
 		self.regions = self.load_regions()
 		self.role_lookup = self.load_roles()
-		self.email_lookup = self.load_emails()
-		self.vacation_lookup = self.load_vacations()
+		self.email_lookup = self.load_emails() #needs implemented
+		self.vacation_lookup = self.load_vacations() #needs implemented
 	
 	def load_regions(self):
 		header_text = []
@@ -37,7 +37,7 @@ class Company:
 			This grabs the contents of the cells in the top row of the Roles worksheet.
 			It stores them in a list and stops when it gets to a blank cell.
 			It returns all entries after the first 4.
-			These are the headings that	correspond with the companies regions.
+			These are the headings that correspond with the companies regions.
 		'''
 	
 	def load_approvers(self, row):
@@ -185,16 +185,16 @@ def output_to_screen_and_clipboard(output, company):
 
 print('Loading companies')
 company1 = Company('Company1',
-			openpyxl.load_workbook(r'matrixCompany1.xlsm'),
-			re.compile(r'\S+'), #UPDATE!  letter+ until : or _ then anything until whitespace
+			openpyxl.load_workbook(r'/{file location!}/matrixCompany1.xlsx'),
+			re.compile(r'[A-Z]{1,3}(:|_)\S+'),
 			['ProdC1', 'QaC1', 'ProdC1/QaC1', 'DevC1', 'QaC1/DevC1'])
 company2 = Company('Company2',
-			openpyxl.load_workbook(r'matrixCompany2.xlsm'),
+			openpyxl.load_workbook(r'/{file location!}/matrixCompany2.xlsx'),
 			re.compile(r'Z:\S{4}:\S{7}:\S{4}:\S'),
 			['ProdC2', 'QaC2', 'ProdC2/QaC2', 'DevC2', 'QaC1/DevC2'])
 company3 = Company('Company3',
-			openpyxl.load_workbook(r'matrixCompany3.xlsm'),
-			re.compile(r'\S+'), #same as company1
+			openpyxl.load_workbook(r'/{file location!}/matrixCompany3.xlsx'),
+			re.compile(r'\S+'),
 			['ProdC3', 'QaC3', 'ProdC3/QaC3', 'DevC3', 'QaC3/DevC3'])
 
 list_companies = [company1, company2, company3]
@@ -218,7 +218,7 @@ while (True):
 		break
 	region = select_region - 1
 	
-	print("\nPaste the roles in, hit Ctrl+Z, then hit Enter.")
+	print("\nPaste the roles in, hit Ctrl+D (Ctrl+Z and Enter for Windows).")
 	requested_roles = get_role_input()
 	
 	organized_output = matrix.check_and_sort_roles(requested_roles, region)
@@ -229,6 +229,6 @@ while (True):
 		break
 	user_client = matrix.clients[select_client - 1]
 	
-	#Insert single approver client functionality here.  Append tuple(s).
-	
 	output_to_screen_and_clipboard(organized_output, matrix)
+
+	#Insert single approver client functionality here.  Append output.
