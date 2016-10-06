@@ -39,7 +39,12 @@ class Company:
 			It returns all entries after the first 4.
 			These are the headings that correspond with the companies regions.
 		'''
-	
+
+	def vacation_check(self, names):
+		return names
+	'''
+	'''	
+
 	def load_approvers(self, row):
 		approvers = []
 		if row[2].value == 'Regional':
@@ -49,6 +54,7 @@ class Company:
 				if approver.value != 'N/A':
 					approvers.append(approver.value)
 					break
+		approvers = self.vacation_check(approvers)
 		return approvers
 		'''
 			Takes the row and a blank approvers list.
@@ -81,19 +87,33 @@ class Company:
 		'''
 
 	def load_emails(self):
-		return
+		emails = {}
+		for row in self.emails.rows:
+			emails[row[0].value] = row[1].value
+		return emails
 	'''
+		Creates a dictionary of emails from the table of names/emails in the sprreadsheet.
 	'''
 
 	def load_vacations(self):
-		return
+		vacation = namedtuple('vacation',
+				'standard replacement start finish')
+		vacation_list = []
+		for row in self.vacations.rows:
+			vacation_tuple = vacation(row[0].value,
+						row[1].value,
+						row[2].value,
+						row[3].value)
+			vacation_list.append(vacation_tuple)
+		return vacation_list
 	'''
+		Creates a list of tuples from the information in the OnHoliday spreadsheet.
 	'''
 
 	def check_and_sort_roles(self, user_input, user_region):
 		roles_and_approvers = []
-		for role in user_input:
-			find_this = self.regex.search(role)
+		for line in user_input:
+			find_this = self.regex.search(line.upper())
 			if(find_this != None):
 				for row in self.role_lookup:
 					if find_this.group() == row.name:
@@ -115,9 +135,6 @@ class Company:
 				Collects tuples (name, description, approver).
 			Returns the list of tuples sorted by approver name.
 		'''
-
-def vacation_check(name):
-	return
 
 #-------------------------------------------------------------------------------
 def get_menu(list_of_things):
@@ -185,15 +202,15 @@ def output_to_screen_and_clipboard(output, company):
 
 print('Loading companies')
 company1 = Company('Company1',
-			openpyxl.load_workbook(r'/{file location!}/matrixCompany1.xlsx'),
+			openpyxl.load_workbook(r'/home/joe/matrixCompany1.xlsx'),
 			re.compile(r'[A-Z]{1,3}(:|_)\S+'),
 			['ProdC1', 'QaC1', 'ProdC1/QaC1', 'DevC1', 'QaC1/DevC1'])
 company2 = Company('Company2',
-			openpyxl.load_workbook(r'/{file location!}/matrixCompany2.xlsx'),
+			openpyxl.load_workbook(r'/home/joe/matrixCompany2.xlsx'),
 			re.compile(r'Z:\S{4}:\S{7}:\S{4}:\S'),
 			['ProdC2', 'QaC2', 'ProdC2/QaC2', 'DevC2', 'QaC1/DevC2'])
 company3 = Company('Company3',
-			openpyxl.load_workbook(r'/{file location!}/matrixCompany3.xlsx'),
+			openpyxl.load_workbook(r'/home/joe/matrixCompany3.xlsx'),
 			re.compile(r'\S+'),
 			['ProdC3', 'QaC3', 'ProdC3/QaC3', 'DevC3', 'QaC3/DevC3'])
 
