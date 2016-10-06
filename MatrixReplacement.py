@@ -23,8 +23,8 @@ class Company:
 		self.vacations = self.matrix.get_sheet_by_name("OnHoliday")
 		self.regions = self.load_regions()
 		self.role_lookup = self.load_roles()
-		self.email_lookup = self.load_emails() #needs implemented
-		self.vacation_lookup = self.load_vacations() #needs implemented
+		self.email_lookup = self.load_emails()
+		self.vacation_lookup = self.load_vacations()
 	
 	def load_regions(self):
 		header_text = []
@@ -41,7 +41,7 @@ class Company:
 		'''
 
 	def vacation_check(self, names):
-		return names
+		return names #needs implemented
 	'''
 	'''	
 
@@ -202,15 +202,15 @@ def output_to_screen_and_clipboard(output, company):
 
 print('Loading companies')
 company1 = Company('Company1',
-			openpyxl.load_workbook(r'/home/joe/matrixCompany1.xlsx'),
+			openpyxl.load_workbook(r'/{file path}/matrixCompany1.xlsx'),
 			re.compile(r'[A-Z]{1,3}(:|_)\S+'),
 			['ProdC1', 'QaC1', 'ProdC1/QaC1', 'DevC1', 'QaC1/DevC1'])
 company2 = Company('Company2',
-			openpyxl.load_workbook(r'/home/joe/matrixCompany2.xlsx'),
+			openpyxl.load_workbook(r'/{file path}/matrixCompany2.xlsx'),
 			re.compile(r'Z:\S{4}:\S{7}:\S{4}:\S'),
 			['ProdC2', 'QaC2', 'ProdC2/QaC2', 'DevC2', 'QaC1/DevC2'])
 company3 = Company('Company3',
-			openpyxl.load_workbook(r'/home/joe/matrixCompany3.xlsx'),
+			openpyxl.load_workbook(r'/{file path}/matrixCompany3.xlsx'),
 			re.compile(r'\S+'),
 			['ProdC3', 'QaC3', 'ProdC3/QaC3', 'DevC3', 'QaC3/DevC3'])
 
@@ -219,7 +219,7 @@ list_companies = [company1, company2, company3]
 list_company_names = [company.name for company in list_companies]
 
 list_single_approver_clients = [(),
-				()]
+				()] #needs implemented
 			
 #Begin Program
 while (True):	
