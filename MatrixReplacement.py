@@ -70,7 +70,6 @@ class Company:
 						  'name description approvers')
 		role_list = []
 		for row in self.roles.rows:
-			approvers = []
 			if row[0].value in ('', None):
 				print('Issue with row ' + str(row[0]))
 				break
@@ -127,8 +126,9 @@ class Company:
 											row.approvers[0]))
 		return sorted(roles_and_approvers, key = lambda entry: entry[2])
 		'''
-			Takes a list user_roles and an int user_region.
-			It filters each user_role through that companies regex.
+			Takes a list of strings (user_input) and an int user_region.
+			It filters each string of user_input through that companies regex.
+			[It forces the input string to be all uppercase letters.]
 			Takes the results of that filter and 
 				tries to find it in that company's role_lookup.
 			If it is a Regional role, the lenght of appovers will be > 1.
@@ -184,10 +184,8 @@ def output_to_screen_and_clipboard(output, company):
 	for role_approver in output:
 		if(role_approver[2] != current_approver):
 			current_approver = role_approver[2]
-			#insert vacation functionality.  pass current approver.  returns an approver.
-			#current_approver = vacation_check(current_approver)
 			print('\n' + user_client + ' -- awaiting approval from ' + current_approver)
-			#rewrite this for loop
+			#rewrite this for loop to use self.email_lookup
 			for emails in range(1,100):
 				if(current_approver == company.emails['A' + str(emails)].value):
 					approver_emails += company.emails['B' + str(emails)].value + ', '
