@@ -1,7 +1,7 @@
 '''
 	Title:  Excel Matrix tool
 	Author:  Joe Friedrich
-	License:  GPLv3
+	License:  MIT
 '''
 
 print('Importing libraries')
