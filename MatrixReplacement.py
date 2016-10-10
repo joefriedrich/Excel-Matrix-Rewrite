@@ -10,6 +10,7 @@ import re
 from sys import stdin
 from warnings import simplefilter
 from collections import namedtuple
+from datetime import datetime
 
 #-----------------------------------------------------------------------------
 class Company:
@@ -181,16 +182,15 @@ def get_role_input():
 def output_to_screen_and_clipboard(output, company):
 	current_approver = ''
 	approver_emails = ''
-	for role_approver in output:
-		if(role_approver[2] != current_approver):
-			current_approver = role_approver[2]
+	for role_tuple in output:
+		if(role_tuple[2] != current_approver):
+			current_approver = role_tuple[2]
 			print('\n' + user_client + ' -- awaiting approval from ' + current_approver)
-			#rewrite this for loop to use self.email_lookup
-			for emails in range(1,100):
-				if(current_approver == company.emails['A' + str(emails)].value):
-					approver_emails += company.emails['B' + str(emails)].value + ', '
-					break
-		print(role_approver[0] + '\t' + role_approver[1])
+			if current_approver in company.email_lookup:
+				approver_emails += company.email_lookup[current_approver] + ', '
+			else:
+				approver_emails += current_approver + "'s email is missing, "
+		print(role_tuple[0] + '\t' + role_tuple[1])
 	print('\n' + approver_emails[:-2] + '\n')
 	'''
 	'''
