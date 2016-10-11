@@ -7,3 +7,7 @@ It is not currently Python 2 compatable.
 Move the sample data files (.xlsx) where you want, but you must document the location in the main code.
 There is a data structure called a 'Company', and this structure must contain this information.
 If you want to work with your own data, you must maintain this.
+# Future Plans
+1 - GUI!
+2 - Migrate away from Excel Spreadsheets to .csv files (which can still be read by Excel).
+3 - Automate updates to .csv files
