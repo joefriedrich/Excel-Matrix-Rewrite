@@ -10,4 +10,4 @@ If you want to work with your own data, you must maintain this.
 # Future Plans
 1. GUI!
 2. Migrate away from Excel Spreadsheets to .csv files (which can still be read by Excel).
-3. Automate updates to .csv files
+3. Automate updates to .csv files from source (SAP)
