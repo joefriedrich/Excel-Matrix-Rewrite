@@ -8,6 +8,6 @@ Move the sample data files (.xlsx) where you want, but you must document the loc
 There is a data structure called a 'Company', and this structure must contain this information.
 If you want to work with your own data, you must maintain this.
 # Future Plans
-1 - GUI!
-2 - Migrate away from Excel Spreadsheets to .csv files (which can still be read by Excel).
-3 - Automate updates to .csv files
+1. GUI!
+2. Migrate away from Excel Spreadsheets to .csv files (which can still be read by Excel).
+3. Automate updates to .csv files
