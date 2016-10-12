@@ -208,15 +208,15 @@ def output_to_screen_and_clipboard(output, company):
 
 print('Loading companies')
 company1 = Company('Company1',
-			openpyxl.load_workbook(r'/home/joe/matrixCompany1.xlsx'),
+			openpyxl.load_workbook(r'/{file path}/matrixCompany1.xlsx'),
 			re.compile(r'[A-Z]{1,3}(:|_)\S+'),
 			['ProdC1', 'QaC1', 'ProdC1/QaC1', 'DevC1', 'QaC1/DevC1'])
 company2 = Company('Company2',
-			openpyxl.load_workbook(r'/home/joe/matrixCompany2.xlsx'),
+			openpyxl.load_workbook(r'/{file path}/matrixCompany2.xlsx'),
 			re.compile(r'Z:\S{4}:\S{7}:\S{4}:\S'),
 			['ProdC2', 'QaC2', 'ProdC2/QaC2', 'DevC2', 'QaC1/DevC2'])
 company3 = Company('Company3',
-			openpyxl.load_workbook(r'/home/joe/matrixCompany3.xlsx'),
+			openpyxl.load_workbook(r'/{file path}/matrixCompany3.xlsx'),
 			re.compile(r'\S+'),
 			['ProdC3', 'QaC3', 'ProdC3/QaC3', 'DevC3', 'QaC3/DevC3'])
 
