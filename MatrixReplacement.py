@@ -22,10 +22,10 @@ class Company:
 		self.roles = self.matrix.get_sheet_by_name("Roles")
 		self.emails = self.matrix.get_sheet_by_name("Names and Email")
 		self.vacations = self.matrix.get_sheet_by_name("OnHoliday")
+		self.vacation_lookup = self.load_vacations()
 		self.regions = self.load_regions()
 		self.role_lookup = self.load_roles()
 		self.email_lookup = self.load_emails()
-		self.vacation_lookup = self.load_vacations()
 	
 	def load_regions(self):
 		header_text = []
@@ -42,7 +42,15 @@ class Company:
 		'''
 
 	def vacation_check(self, names):
-		return names #needs implemented
+		checked_names = []
+		for name in names:
+			for vacation in self.vacation_lookup:
+				if name == vacation.standard:
+					if vacation.start <= datetime.now() <= vacation.finish:
+						name = vacation.replacement
+						break
+			checked_names.append(name)
+		return checked_names
 	'''
 	'''	
 
@@ -200,15 +208,15 @@ def output_to_screen_and_clipboard(output, company):
 
 print('Loading companies')
 company1 = Company('Company1',
-			openpyxl.load_workbook(r'/{file path}/matrixCompany1.xlsx'),
+			openpyxl.load_workbook(r'/home/joe/matrixCompany1.xlsx'),
 			re.compile(r'[A-Z]{1,3}(:|_)\S+'),
 			['ProdC1', 'QaC1', 'ProdC1/QaC1', 'DevC1', 'QaC1/DevC1'])
 company2 = Company('Company2',
-			openpyxl.load_workbook(r'/{file path}/matrixCompany2.xlsx'),
+			openpyxl.load_workbook(r'/home/joe/matrixCompany2.xlsx'),
 			re.compile(r'Z:\S{4}:\S{7}:\S{4}:\S'),
 			['ProdC2', 'QaC2', 'ProdC2/QaC2', 'DevC2', 'QaC1/DevC2'])
 company3 = Company('Company3',
-			openpyxl.load_workbook(r'/{file path}/matrixCompany3.xlsx'),
+			openpyxl.load_workbook(r'/home/joe/matrixCompany3.xlsx'),
 			re.compile(r'\S+'),
 			['ProdC3', 'QaC3', 'ProdC3/QaC3', 'DevC3', 'QaC3/DevC3'])
 
@@ -244,6 +252,6 @@ while (True):
 		break
 	user_client = matrix.clients[select_client - 1]
 	
-	output_to_screen_and_clipboard(organized_output, matrix)
-
 	#Insert single approver client functionality here.  Append output.
+	
+	output_to_screen_and_clipboard(organized_output, matrix)
