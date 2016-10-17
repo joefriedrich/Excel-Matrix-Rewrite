@@ -8,6 +8,7 @@ Move the sample data files (.xlsx) where you want, but you must document the loc
 There is a data structure called a 'Company', and this structure must contain this information.
 If you want to work with your own data, you must maintain this.
 # Future Plans
+-1. Write code to be PEP-8 compliant.
 0. Finish basic functionality.
 1. Test generator-centric design (This has been moved up because the program takes up 350MB RAM in production!)
 2. GUI!
