@@ -14,19 +14,21 @@ from datetime import datetime
 
 #-----------------------------------------------------------------------------
 class Company:
-	def __init__(self, name, matrix, regex, clients):
+	def __init__(self, name, excel_file, regex, clients):
 		self.name = name
-		self.matrix = matrix
 		self.regex = regex
 		self.clients = clients
-		self.roles = self.matrix.get_sheet_by_name("Roles")
-		self.emails = self.matrix.get_sheet_by_name("Names and Email")
-		self.vacations = self.matrix.get_sheet_by_name("OnHoliday")
+		self.roles = excel_file.get_sheet_by_name("Roles")
+		self.emails = excel_file.get_sheet_by_name("Names and Email")
+		self.vacations = excel_file.get_sheet_by_name("OnHoliday")
 		self.vacation_lookup = self.load_vacations()
 		self.regions = self.load_regions()
 		self.role_lookup = self.load_roles()
 		self.email_lookup = self.load_emails()
-	
+		self.roles = None
+		self.emails = None
+		self.vacations = None
+
 	def load_regions(self):
 		header_text = []
 		for cell in self.roles.rows[0]:
@@ -208,15 +210,15 @@ def output_to_screen_and_clipboard(output, company):
 
 print('Loading companies')
 company1 = Company('Company1',
-			openpyxl.load_workbook(r'/{file path}/matrixCompany1.xlsx'),
+			openpyxl.load_workbook(r'/home/joe/matrixCompany1.xlsx'),
 			re.compile(r'[A-Z]{1,3}(:|_)\S+'),
 			['ProdC1', 'QaC1', 'ProdC1/QaC1', 'DevC1', 'QaC1/DevC1'])
 company2 = Company('Company2',
-			openpyxl.load_workbook(r'/{file path}/matrixCompany2.xlsx'),
+			openpyxl.load_workbook(r'/home/joe/matrixCompany2.xlsx'),
 			re.compile(r'Z:\S{4}:\S{7}:\S{4}:\S'),
 			['ProdC2', 'QaC2', 'ProdC2/QaC2', 'DevC2', 'QaC1/DevC2'])
 company3 = Company('Company3',
-			openpyxl.load_workbook(r'/{file path}/matrixCompany3.xlsx'),
+			openpyxl.load_workbook(r'/home/joe/matrixCompany3.xlsx'),
 			re.compile(r'\S+'),
 			['ProdC3', 'QaC3', 'ProdC3/QaC3', 'DevC3', 'QaC3/DevC3'])
 
