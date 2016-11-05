@@ -10,7 +10,6 @@ If you want to work with your own data, you must maintain this.
 # Future Plans
 0. Write code to be PEP-8 compliant.
 1. Finish basic functionality.
-2. Test generator-centric design (This has been moved up because the program takes up 350MB RAM in production!)
-3. GUI!
-4. Migrate away from Excel Spreadsheets to .csv files (which can still be read by Excel).
-5. Automate updates to .csv files from the source.
+2. GUI!
+3. Migrate away from Excel Spreadsheets to .csv files (which can still be read by Excel).
+4. Automate updates to .csv files from the source.
