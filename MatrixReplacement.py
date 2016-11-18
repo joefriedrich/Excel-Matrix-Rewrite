@@ -11,6 +11,7 @@ from sys import stdin
 from warnings import simplefilter
 from collections import namedtuple
 from datetime import datetime
+from tkinter import Tk
 
 #-----------------------------------------------------------------------------
 class Company:
@@ -126,7 +127,7 @@ class Company:
 		return vacation_list
 
 
-	def check_and_sort_roles(self, user_input, user_region):
+	def find_and_sort_roles(self, user_input, user_region):
 		'''
 			Takes a list of strings (user_input) and an int user_region.
 			It filters each string of user_input through that companies regex.
@@ -140,6 +141,7 @@ class Company:
 		roles_and_approvers = []
 		for line in user_input:
 			find_this = self.regex.search(line.upper())
+			role_not_found = True
 			if(find_this != None):
 				for row in self.role_lookup:
 					if find_this.group() == row.name:
@@ -151,6 +153,9 @@ class Company:
 							roles_and_approvers.append((row.name, 
 											row.description, 
 											row.approvers[0]))
+						role_not_found = False
+				if role_not_found:
+					print('\nRole ' + find_this.group() + ' was not found.')
 		return sorted(roles_and_approvers, key = lambda entry: entry[2])
 
 #-------------------------------------------------------------------------------
@@ -179,15 +184,19 @@ def get_menu_input(menu_total):
 				or not a number at all
 				it returns 0.
 	'''
-	while True: #left while true in incase we need to make it harder to quit
+	while True:
 		try:
-			user_input = int(input('Any other entry to quit:  '))
+			user_input = int(input('Type a number from the menu and hit enter.\nMake any other entry and enter to stop:  '))
 			if 1 <= user_input <= menu_total:
 				return user_input
-			else:
+			else:  #the numerical value is not a menu option
+				quitting = input('\nAre you sure you are finished?\nPress y and enter to quit.\nAny other key(s) and enter to continue:  ')
+				if quitting == 'y':  #document change!
+					return 0
+		except ValueError:  #if the value is a non-numeral or float
+			quitting = input('\nAre you sure you are finished?\nPress y and enter to quit.\nAny other key(s) and enter to continue:  ')
+			if quitting == 'y':  #document change!
 				return 0
-		except ValueError:  #if the value is a non-numeral or float, return 0
-			return 0
 
 	
 def get_role_input():
@@ -198,22 +207,34 @@ def get_role_input():
 	return stdin.readlines()
 
 
-def output_to_screen_and_clipboard(output, company):
+def output_to_screen_and_clipboard(output, company, clipboard):
 	'''
 	'''
 	current_approver = ''
-	approver_emails = ''
+	approver_emails = []
 	for role_tuple in output:
 		if(role_tuple[2] != current_approver):
 			current_approver = role_tuple[2]
 			print('\n' + user_client + ' -- awaiting approval from ' + current_approver)
+			clipboard.clipboard_append('\n' + user_client + ' -- awaiting approval from ' + current_approver + '\n')
 			if current_approver in company.email_lookup:
-				approver_emails += company.email_lookup[current_approver] + ', '
+				approver_emails.append(company.email_lookup[current_approver])
 			else:
-				approver_emails += current_approver + "'s email is missing, "
+				approver_emails.append(current_approver + "'s email is missing")
 		print(role_tuple[0] + '\t' + role_tuple[1])
-	print('\n' + approver_emails[:-2] + '\n')
+		clipboard.clipboard_append(role_tuple[0] + '\t' + role_tuple[1] + '\n')
+	return approver_emails, clipboard
 
+def email_format(email_list):
+	'''
+	'''
+	email_output = ''
+	for email in email_list:
+		email_output += email + ', '	
+
+	print('\n' + email_output[:-2] + '\n')
+	return str('\n' + email_output[:-2] + '\n')
+	
 	
 #-------------------------------------------------------------------------------
 simplefilter('ignore')  #blocks some warnings that openpyxl throws when loading files
@@ -245,32 +266,55 @@ single_approver_clients.append(('Company Three Test Email Duplication', 'CP3TST 
 
 list_company_names = [company.name for company in list_companies]
 list_single_approvers = [client[0] for client in single_approver_clients]
+
+clipboard = Tk()
+clipboard.withdraw() #removes Tk window that is not needed at this time.
 			
 #Begin Program
 while (True):	
 	print('\nWhich company?')
 	select_company = get_menu(list_company_names)
-	if (select_company == 0):
+	if select_company == 0:
+		clipboard.destroy()  
 		break
 	matrix = list_companies[select_company - 1]
 	
 	print('\nWhich region?')
 	select_region = get_menu(matrix.regions)
-	if (select_region == 0):
+	if select_region == 0:
+		clipboard.destroy()  
 		break
 	region = select_region - 1
 	
 	print("\nPaste the roles in, hit Ctrl+D (Ctrl+Z and Enter for Windows).")
 	requested_roles = get_role_input()
 	
-	organized_output = matrix.check_and_sort_roles(requested_roles, region)
+	organized_output = matrix.find_and_sort_roles(requested_roles, region)
 	
 	print('\nWhich client?')
 	select_client = get_menu(matrix.clients)
-	if (select_client == 0):
+	if select_client == 0:
+		clipboard.destroy()  
 		break
 	user_client = matrix.clients[select_client - 1]
 	
-	output_to_screen_and_clipboard(organized_output, matrix) #need to pass it clipboard. this will change to return emails and clipboard.
+	clipboard.clipboard_clear() #clear's the current contents of the clipboard in prep for new data
+	email_list, clipboard = output_to_screen_and_clipboard(organized_output, matrix, clipboard)
 	
-	#Insert single approver client functionality here.  Print output.  Append to clipboard.
+	while True:
+		print('\n***************Single Approver Client Section*********************')
+		print('***This will print your single client approvers UNTIL YOU STOP.***')
+		print('******************************************************************')
+		select_single_client = get_menu(list_single_approvers)
+		if select_single_client == 0:
+			break
+		
+		selected_client = single_approver_clients[select_single_client - 1]
+		
+		print(selected_client[1])
+		clipboard.clipboard_append(selected_client[1])
+		if selected_client[2] not in email_list:
+			email_list.append(selected_client[2])
+	
+	clipboard.clipboard_append(email_format(email_list))
+	print('\nYour output is now in the clipboard.  Paste it into your ticket.')
