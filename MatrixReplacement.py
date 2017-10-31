@@ -7,6 +7,7 @@
 print('Importing libraries')
 import openpyxl
 import re
+import os
 from sys import stdin
 from warnings import simplefilter
 from collections import namedtuple
@@ -25,8 +26,8 @@ class Company:
 		self.role_lookup = self.load_roles()
 		self.email_lookup = self.load_emails()
 		self.excel_file = None  #This frees up memory.
-	
-	
+
+		
 	def load_regions(self):
 		'''
 			This grabs the contents of the cells in the top row of the Roles
@@ -107,9 +108,9 @@ class Company:
 			if row[0].value in ('', None):
 				print('Issue with a row.')   #Can we pull row data?
 				break
-			role_tuple = role(row[0].value, row[1].value, 
+			role_data = role(row[0].value, row[1].value,
 								self.load_approvers(row))
-			role_list.append(role_tuple)
+			role_list.append(role_data)
 		return role_list
 
 
@@ -174,7 +175,6 @@ class Company:
 
 		
 #---------------------------End Company Class---------------------------------
-
 
 def get_menu(list_of_things):
 	'''
@@ -244,20 +244,27 @@ def parse_role_tuples(output, company, clipboard):
 			found or the list ends.
 		Returns a list of strings (approver_emails) and the clipboard.
 	'''
+	approvers_without_email = ['Do Not Assign',
+					'NO APPROVAL REQUIRED',
+					'No Approval Needed',
+					'Do Not Assign - Parent Role',
+					'Parent Role: ASSIGN ONLY CHILD ROLES FOR THIS ACCESS']
 	current_approver = ''
 	approver_emails = []
 	for role_tuple in output:
 		if(role_tuple[2] != current_approver):
 			current_approver = role_tuple[2]
-			print('\n' + user_client + 
+			print('\n' + user_client +
 					' -- awaiting approval from ' + current_approver)
-			clipboard.clipboard_append('\n' + user_client + 
+			clipboard.clipboard_append('\n' + user_client +
 					' -- awaiting approval from ' + current_approver + '\n')
-			if current_approver in company.email_lookup:
-				approver_emails.append(company.email_lookup[current_approver])
-			else:
-				approver_emails.append(current_approver +
-										"'s email is missing")
+			if current_approver not in approvers_without_email:
+				if current_approver in company.email_lookup:
+					approver_emails.append(company.email_lookup[
+											current_approver])
+				else:
+					approver_emails.append(current_approver +
+											"'s email is missing")
 		print(role_tuple[0] + '\t ' + role_tuple[1])
 		clipboard.clipboard_append(role_tuple[0] + '\t ' + 
 									role_tuple[1] + '\n')
@@ -311,7 +318,7 @@ simplefilter('ignore')  #blocks some openpyxl warnings when loading files
 
 print('Loading companies.')
 company1 = Company('Company1',
-			r'/{file path}/matrixCompany2.xlsx',
+			r'/{file path}/matrixCompany1.xlsx',
 			r'[A-Z]{1,3}(:|_)\S+',
 			['ProdC1', 'QaC1', 'ProdC1/QaC1', 'DevC1', 'QaC1/DevC1'])
 company2 = Company('Company2',
@@ -323,7 +330,7 @@ company3 = Company('Company3',
 			r'\S+',
 			['ProdC3', 'QaC3', 'ProdC3/QaC3', 'DevC3', 'QaC3/DevC3'])
 
-list_companies = [company1]#, company2, company3]
+list_companies = [company1, company2, company3]
 
 print('Loading single approvers.')		
 single_approver_clients = []
@@ -362,7 +369,7 @@ while (True):
 		break
 	company = list_companies[select_company - 1]
 	
-	print('\nWhich region does the user wish to access?')
+	print('\nIn which region does the user work?')
 	select_region = get_menu(company.region_lookup)
 	if select_region == 0:
 		clipboard.destroy()
@@ -374,15 +381,19 @@ while (True):
 	
 	role_tuples = company.find_and_sort_roles(requested_roles, region)
 	
-	print('\nIn which SAP client does the user want the access?')
-	select_client = get_menu(company.clients)
-	if select_client == 0:
-		clipboard.destroy()
-		break
-	user_client = company.clients[select_client - 1]
-	
 	clipboard.clipboard_clear() #Clears the clipboard.  New data coming.
-	email_list, clipboard = parse_role_tuples(role_tuples, company, clipboard)
+	
+	if requested_roles != []:
+		print('\nIn which client does the user want the access?')
+		select_client = get_menu(company.clients)
+		if select_client == 0:
+			clipboard.destroy()
+			break
+		user_client = company.clients[select_client - 1]
+	
+		email_list, clipboard = parse_role_tuples(role_tuples, company, clipboard)
+	else:
+		email_list = []
 	
 	email_list, clipboard = single_approvers(list_single_approvers,
 											email_list, clipboard)
@@ -390,3 +401,6 @@ while (True):
 	clipboard.clipboard_append(email_format(email_list))
 	print('\n**YOUR OUTPUT IS IN THE CLIPBOARD. PASTE IT INTO YOUR TICKET.**')
 	garbage = input('Press enter to continue.')  #Pause for the user.
+
+	os.system('clear') #clears a terminal/powershell screen
+	#os.system('cls')  #clears the cmd screen [Windows]
