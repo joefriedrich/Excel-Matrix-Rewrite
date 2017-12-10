@@ -9,8 +9,7 @@ There is a data structure called a 'Company', and this structure must contain th
 If you want to work with your own data, you must maintain this.
 # Future Plans
 0. Make code PEP-8 compliant. 
-1. Re-write single-approver functionality to move data out of code.
+1. Migrate away from Excel Spreadsheets to .csv files (which can still be read by Excel).
 2. Make a .ini file to house company specific information (moving data out of code).
-3. Migrate away from Excel Spreadsheets to .csv files (which can still be read by Excel).
-4. Automate updates to .csv files from the source.
+4. Automate updates to .csv files from the source information.
 5. GUI!! (in Flask?)
