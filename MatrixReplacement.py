@@ -25,9 +25,10 @@ class Company:
 		self.region_lookup = self.load_regions()
 		self.role_lookup = self.load_roles()
 		self.email_lookup = self.load_emails()
+		self.single_approver_lookup = self.load_single_approvers()
 		self.excel_file = None  #This frees up memory.
 
-		
+
 	def load_regions(self):
 		'''
 			This grabs the contents of the cells in the top row of the Roles
@@ -140,6 +141,25 @@ class Company:
 						row[3].value)
 			vacation_list.append(vacation_tuple)
 		return vacation_list
+
+
+	def load_single_approvers(self):
+		'''
+            #Needs written
+		'''
+		single_approver = namedtuple('single_Approver',
+				'menu_name client client_name approver role_text')
+		single_approver_list = []
+		for row in self.excel_file['SingleApproverClients'].rows:
+			single_approver_tuple = single_approver(row[0].value,
+								row[1].value,
+								row[2].value,
+								row[3].value,
+								row[4].value)
+			single_approver_list.append(single_approver_tuple)
+		
+		title_row = single_approver_list.pop(0) #removes title row
+		return single_approver_list
 
 
 	def find_and_sort_roles(self, user_input, user_region):
@@ -271,7 +291,7 @@ def parse_role_tuples(output, company, clipboard):
 	return approver_emails, clipboard
 
 	
-def single_approvers(single_approver_data, email_list, clipboard):
+def single_approvers(company, email_list, clipboard):
 	'''
 		Takes list of tuples, list of strings, and clipboard.
 		Will take one single approver at a time and append it's data to 
@@ -285,17 +305,28 @@ def single_approvers(single_approver_data, email_list, clipboard):
 		print('***********************************************************')
 		print('\nDoes the user need additional '
 				'access in single approver clients?')
-		select_single_client = get_menu(single_approver_data)
+		menu_options = [client[0] for client in company.single_approver_lookup]
+
+		select_single_client = get_menu(menu_options)
 		if select_single_client == 0:
 			break
 		
-		selected_client = single_approver_clients[select_single_client - 1]
+		selected_client = company.single_approver_lookup[select_single_client - 1]
+		current_approver = selected_client[3]
 		
-		print(selected_client[1])
-		clipboard.clipboard_append(selected_client[1])
-		if selected_client[2] not in email_list:
-			email_list.append(selected_client[2])
-		
+		print('\n' + selected_client[1] + ' -- ' + selected_client[2] +
+				' -- awaiting approval from ' + current_approver + '\n' +
+				selected_client[4])
+		clipboard.clipboard_append('\n' + selected_client[1] + selected_client[2] +
+				' -- awaiting approval from ' + current_approver + '\n' +
+				selected_client[4] + '\n')
+
+		#need a check for multiple email approvers
+		if current_approver in company.email_lookup: 
+			email_list.append(company.email_lookup[current_approver])
+		else:
+			email_list.append(current_approver + "'s email is missing")
+
 	return email_list, clipboard
 
 	
@@ -305,12 +336,15 @@ def email_format(email_list):
 		Returns a concatination of this list.
 	'''
 	email_output = ''
+	email_separator_character = ','
+	clean_email = -1 * len(email_separator_character)
+
 	for email in email_list:
-		email_output += email + ', '	
+		email_output += email + email_separator_character
 	
-	print('\n' + email_output[:-2] + '\n')
-	return str('\n' + email_output[:-2] + '\n')	
-	
+	print('\n' + email_output[:clean_email] + '\n')
+	return str('\n' + email_output[:clean_email] + '\n')	
+
 	
 #--------------------------End Local Functions--------------------------------
 
@@ -331,30 +365,7 @@ company3 = Company('Company3',
 			['ProdC3', 'QaC3', 'ProdC3/QaC3', 'DevC3', 'QaC3/DevC3'])
 
 list_companies = [company1, company2, company3]
-
-print('Loading single approvers.')		
-single_approver_clients = []
-single_approver_clients.append(('Company One Special Test Client', 
-								'\nCP1TST -- awaiting approval from singleApproverCP1\nSpecialRole\n',
-								'singleApprover@company1.com'))
-single_approver_clients.append(('Company Two Special Test Client',
-								'\nCP2TST -- awaiting approval from singleApproverCP2\nSpecialRole\n',
-								'singleApprover@company2.com'))
-single_approver_clients.append(('Company Three Special Test Client', 
-								'\nCP3TST -- awaiting approval from singleApproverCP3\nSpecialRole\n',
-								'singleApprover@company3.com'))
-single_approver_clients.append(('Company One Test Email Duplication',
-								'\nCP1TST -- awaiting approval from ApproverOneCP1\nSpecialRole\n',
-								'Approver1@company1.com'))
-single_approver_clients.append(('Company Two Test Email Duplication',
-								'\nCP2TST -- awaiting approval from ApproverOneCP2\nSpecialRole\n', 
-								'Approver1@company2.com'))
-single_approver_clients.append(('Company Three Test Email Duplication',
-								'\nCP3TST -- awaiting approval from ApproverOneCP3\nSpecialRole\n', 
-								'Approver1@company3.com'))
-
-list_company_names = [company.name for company in list_companies]
-list_single_approvers = [client[0] for client in single_approver_clients]
+company_names = [company.name for company in list_companies]
 
 clipboard = Tk()
 clipboard.withdraw() #removes Tk window that is not needed at this time.
@@ -363,7 +374,7 @@ clipboard.withdraw() #removes Tk window that is not needed at this time.
 while (True):
 	print('\n************Welcome to the SAP Access Request Tool************')
 	print('To which company does the user belong?')
-	select_company = get_menu(list_company_names)
+	select_company = get_menu(company_names)
 	if select_company == 0:
 		clipboard.destroy()
 		break
@@ -380,11 +391,14 @@ while (True):
 	requested_roles = get_role_input()
 	
 	role_tuples = company.find_and_sort_roles(requested_roles, region)
+
+	#if company == company 2
+		#do company/country/site conversion
 	
 	clipboard.clipboard_clear() #Clears the clipboard.  New data coming.
 	
 	if requested_roles != []:
-		print('\nIn which client does the user want the access?')
+		print('\nIn which SAP client does the user want the access?')
 		select_client = get_menu(company.clients)
 		if select_client == 0:
 			clipboard.destroy()
@@ -395,8 +409,7 @@ while (True):
 	else:
 		email_list = []
 	
-	email_list, clipboard = single_approvers(list_single_approvers,
-											email_list, clipboard)
+	email_list, clipboard = single_approvers(company, email_list, clipboard)
 	
 	clipboard.clipboard_append(email_format(email_list))
 	print('\n**YOUR OUTPUT IS IN THE CLIPBOARD. PASTE IT INTO YOUR TICKET.**')
