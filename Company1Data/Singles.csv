@@ -1,0 +1,7 @@
+Menu Name,Client,Client Name,Approvers,Role Text
+CB1 – Section1 – Company 1,CB1 001,Company 1 Business 1,Single Approver 1,Section 1 Roles
+CB1 – Section2 – Company 1,CB1 001,Company 1 Business 2,Single Approver 2,Section 2 Roles
+CB1 – Section3 – Company 1,CB1 001,Company 1 Business 3,Single Approver 3,Section 3 Roles
+FC1,FC1 300,Company 1 F Testing,Single Approver 4,Paste Job Title Here
+WC1,WC1 100,Company 1 W Production,Single Approver 5,Paste Roles Here
+XC1,XC1 100,Company 1 X Production,Single Approver 6,Paste Roles Here

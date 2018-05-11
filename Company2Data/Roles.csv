@@ -1,0 +1,9 @@
+Role Name,Role Description,Region,Business Group,Role Owner - Global,Role Owner - Division 1 Global,Role Owner - Division 1 America,Role Owner - Division 1 Europe,Role Owner - Division 1 Asia,Role Owner - Division 2
+Z:ABCD:SAAAAAA:CARL:D,Role Description 1 - Company 2,Division 1 America,Group 1,N/A,N/A,Approver One,N/A,N/A,N/A
+Z:HIJK:SAUSAAA:DAVE:C,Role Description 2 - Company 2,Division 1 America,Group 2,N/A,N/A,Approver Two,N/A,N/A,N/A
+Z:IJKL:QAUSHIA:CONN:A,Role Description 3 - Company 2,Division 2,Group 3,N/A,N/A,N/A,N/A,N/A,Approver Three
+Z:MOPQ:SAUSMAA:REER:A,Role Description 4 - Company 2,Division 1 America,Group 4,N/A,N/A,Approver Four,N/A,N/A,N/A
+Z:MOPQ:SEINAWJ:AA05:B,Role Description 5 - Company 2 - Approver 4,Division 1 Europe,Group 4,N/A,N/A,N/A,Approver Four,N/A,N/A
+Z:PQRS:QAUSHIA:WWW_:A,Role Description 6 - Company 2 - Approver 1,Division 2,Group 1,N/A,N/A,N/A,N/A,N/A,Approver One
+Z:XXXX:XXXXXXX:AUST:D,Role Description 7 - Company 2 - Approver 5,Global,Group 5,Approver Five,N/A,N/A,N/A,N/A,N/A
+Z:XXXX:XXXXXXX:CHEN:D,Role Description 8 - Company 2 - Regional,Regional,Group 4,N/A,N/A,Approver Four,Approver Three,Approver Two,Approver One

@@ -1,24 +1,23 @@
 '''
-	Title:  Excel Matrix tool
+	Title:  SAP Security Interactive tool 1.2
 	Author:  Joe Friedrich
 	License:  MIT
 '''
 
 print('Importing libraries')
-import openpyxl
+import csv
 import re
 import os
 from sys import stdin
-from warnings import simplefilter
 from collections import namedtuple
-from datetime import datetime
+from datetime import date
 from tkinter import Tk
 
 #------------------Begin Company Class----------------------------------------
 class Company:
-	def __init__(self, name, file_name, regular_expression, clients):
+	def __init__(self, name, folder_path, regular_expression, clients):
 		self.name = name
-		self.excel_file = openpyxl.load_workbook(file_name, read_only = True)
+		self.folder_path = folder_path #location of .csv files
 		self.role_format = re.compile(regular_expression)
 		self.clients = clients
 		self.vacation_lookup = self.load_vacations()
@@ -26,24 +25,20 @@ class Company:
 		self.role_lookup = self.load_roles()
 		self.email_lookup = self.load_emails()
 		self.single_approver_lookup = self.load_single_approvers()
-		self.excel_file = None  #This frees up memory.
 
 
 	def load_regions(self):
-		'''
-			This grabs the contents of the cells in the top row of the Roles
-				worksheet.
-			It stores them in a list and stops when it gets to a blank cell.
+		'''   *** Rewrite ***  if we put this into 'load roles', we can take the file
+						loading process out and make another function
+			This grabs the header contents of the Roles .csv file.
 			It returns all entries after the first 4.
 			These are the headings that correspond with the companies regions.
 		'''
-		header_text = []
-		for role in self.excel_file["Roles"]:
-			for cell in role:
-				if cell.value == None:
-					break
-				header_text.append(cell.value)
-			break
+		role_file = open(self.folder_path + '/Roles.csv')
+		role_data = csv.reader(role_file)
+		header_text = role_data.__next__()
+		role_file.close()
+		
 		return header_text[4:]
 
 
@@ -64,7 +59,7 @@ class Company:
 				if name == None: 
 					break
 				elif name == vacation.standard:
-					if vacation.start <= datetime.now() <= vacation.finish:
+					if vacation.start <= date.today() <= vacation.finish:
 						name = vacation.replacement
 						break
 			checked_names.append(name)
@@ -80,82 +75,115 @@ class Company:
 			Otherwise, only grabs the first approver it finds.
 		'''
 		approvers = []
-		if row[2].value == 'Regional':
-			approvers = [approver.value for approver in row[
-						4:4 + len(self.region_lookup)]]
+		if row[2] == 'Regional':
+			approvers = row[4: 4 + len(self.region_lookup)]
 		else:
 			for approver in row[4:4 + len(self.region_lookup)]:
-				if approver.value != 'N/A':
-					approvers.append(approver.value)
+				if approver != 'N/A':
+					approvers.append(approver)
 					break
-		approvers = self.vacation_check(approvers)
-		return approvers
+		return self.vacation_check(approvers)
 
 	
 	def load_roles(self):
-		'''
+		'''   ***REWRITE***   Consider pulling (load regions into this) ***
 			This creates a list of tuples that contain
 				the role name.
 				the role definition.
 				and a list of the role approvers (created by load_approvers).
-			Region was not included, because we can get that from
-				the length of the list of role approvers (when greater than 1)
+			This information comes from the Roles.csv file.
 		'''
 		print('Loading lookup dictionary...')
+		
+		role_file = open(self.folder_path + '/Roles.csv')
+		role_reader = csv.reader(role_file)
+		role_data = list(role_reader)
+		role_file.close()
+		
 		role = namedtuple('role',
-						  'name description approvers')
+						'name description approvers')
 		role_list = []
-		for row in self.excel_file['Roles'].rows:
-			if row[0].value in ('', None):
+		for row in role_data:
+			if row[0] in ('', None):
 				print('Issue with a row.')   #Can we pull row data?
 				break
-			role_data = role(row[0].value, row[1].value,
-								self.load_approvers(row))
+			role_data = role(row[0], row[1],
+						self.load_approvers(row))
 			role_list.append(role_data)
+		
 		return role_list
 
 
 	def load_emails(self):
+		''' 
+			Creates a dictionary from the information in the Email.csv file.
 		'''
-			Creates a dictionary from the information in the 'Names and Email'
-				spreadsheet.
-		'''
+		email_file = open(self.folder_path + '/Email.csv')
+		email_reader = csv.reader(email_file)
+		email_data = list(email_reader)
+		email_file.close()
+		
 		emails = {}
-		for row in self.excel_file['Names and Email'].rows:
-			emails[row[0].value] = row[1].value
+		for row in email_data:
+			emails[row[0]] = row[1]
+		
 		return emails
 
 
 	def load_vacations(self):
-		'''
-			Creates a list of tuples from the information in the OnHoliday
-				spreadsheet.
-		'''
+		''' 
+			Creates a list of tuples from the information in the Vacations.csv
+			file.
+		'''		
+		vacation_file = open(self.folder_path + '/Vacations.csv')
+		vacation_reader = csv.reader(vacation_file)
+		vacation_data = list(vacation_reader)
+		vacation_file.close()
+		
+		garbage = vacation_data.pop(0) #remove header
+		date_format = re.compile(r'\d+')
+		
 		vacation = namedtuple('vacation',
 				'standard replacement start finish')
 		vacation_list = []
-		for row in self.excel_file['OnHoliday'].rows:
-			vacation_tuple = vacation(row[0].value,
-						row[1].value,
-						row[2].value,
-						row[3].value)
+		for row in vacation_data:
+			find_date = date_format.findall(row[2])
+			start_date = date(int(find_date[2]), 
+							int(find_date[0]), 
+							int(find_date[1]))
+			
+			find_date = date_format.findall(row[3])
+			finish_date = date(int(find_date[2]), 
+							int(find_date[0]), 
+							int(find_date[1]))
+			
+			vacation_tuple = vacation(row[0],
+								row[1],
+								start_date,
+								finish_date)
 			vacation_list.append(vacation_tuple)
 		return vacation_list
 
 
 	def load_single_approvers(self):
 		'''
-            #Needs written
+			Creates a list of tuples from the information in the Singles.csv
+			file.
 		'''
+		single_file = open(self.folder_path + '/Singles.csv')
+		single_reader = csv.reader(single_file)
+		single_data = list(single_reader)
+		single_file.close()
+		
 		single_approver = namedtuple('single_Approver',
 				'menu_name client client_name approver role_text')
 		single_approver_list = []
-		for row in self.excel_file['SingleApproverClients'].rows:
-			single_approver_tuple = single_approver(row[0].value,
-								row[1].value,
-								row[2].value,
-								row[3].value,
-								row[4].value)
+		for row in single_data:
+			single_approver_tuple = single_approver(row[0],
+											row[1],
+											row[2],
+											row[3],
+											row[4])
 			single_approver_list.append(single_approver_tuple)
 		
 		title_row = single_approver_list.pop(0) #removes title row
@@ -170,6 +198,9 @@ class Company:
 			Takes the results of that filter and 
 				tries to find it in that company's role_lookup.
 			If it is a Regional role, the lenght of appovers will be > 1.
+			
+			***Rewrite***  Need to separate this functionality out for 
+							greater flexability.
 				Collects tuples (name, description, approver).
 			Returns the list of tuples sorted by approver name.
 		'''
@@ -317,9 +348,9 @@ def single_approvers(company, email_list, clipboard):
 		print('\n' + selected_client[1] + ' -- ' + selected_client[2] +
 				' -- awaiting approval from ' + current_approver + '\n' +
 				selected_client[4])
-		clipboard.clipboard_append('\n' + selected_client[1] + selected_client[2] +
-				' -- awaiting approval from ' + current_approver + '\n' +
-				selected_client[4] + '\n')
+		clipboard.clipboard_append('\n' + selected_client[1] + ' -- ' + 
+				selected_client[2] + ' -- awaiting approval from ' + current_approver +
+				'\n' + selected_client[4] + '\n')
 
 		#need a check for multiple email approvers
 		if current_approver in company.email_lookup: 
@@ -337,38 +368,39 @@ def email_format(email_list):
 	'''
 	email_output = ''
 	email_separator_character = ','
-	clean_email = -1 * len(email_separator_character)
-
+	clean_last_separator = -1 * len(email_separator_character)
+	
+	#make this a list comprehension
 	for email in email_list:
 		email_output += email + email_separator_character
 	
-	print('\n' + email_output[:clean_email] + '\n')
-	return str('\n' + email_output[:clean_email] + '\n')	
+	print('\n' + email_output[:clean_last_separator] + '\n')
+	return str('\n' + email_output[:clean_last_separator] + '\n')	
 
 	
 #--------------------------End Local Functions--------------------------------
 
-simplefilter('ignore')  #blocks some openpyxl warnings when loading files
-
 print('Loading companies.')
 company1 = Company('Company1',
-			r'/{file path}/matrixCompany1.xlsx',
+			r'/home/joe/Code/github/Excel-Matrix-Rewrite/Company1Data',
 			r'[A-Z]{1,3}(:|_)\S+',
 			['ProdC1', 'QaC1', 'ProdC1/QaC1', 'DevC1', 'QaC1/DevC1'])
 company2 = Company('Company2',
-			r'/{file path}/matrixCompany2.xlsx',
+			r'/home/joe/Code/github/Excel-Matrix-Rewrite/Company2Data',
 			r'Z:\S{4}:\S{7}:\S{4}:\S',
 			['ProdC2', 'QaC2', 'ProdC2/QaC2', 'DevC2', 'QaC1/DevC2'])
 company3 = Company('Company3',
-			r'/{file path}/matrixCompany3.xlsx',
+			r'/home/joe/Code/github/Excel-Matrix-Rewrite/Company3Data',
 			r'\S+',
 			['ProdC3', 'QaC3', 'ProdC3/QaC3', 'DevC3', 'QaC3/DevC3'])
 
 list_companies = [company1, company2, company3]
+
 company_names = [company.name for company in list_companies]
 
 clipboard = Tk()
 clipboard.withdraw() #removes Tk window that is not needed at this time.
+#need a way to bring focus back to the cmd window in which this is running
 
 #----------------------------Begin Program------------------------------------
 while (True):
@@ -391,9 +423,6 @@ while (True):
 	requested_roles = get_role_input()
 	
 	role_tuples = company.find_and_sort_roles(requested_roles, region)
-
-	#if company == company 2
-		#do company/country/site conversion
 	
 	clipboard.clipboard_clear() #Clears the clipboard.  New data coming.
 	
@@ -413,7 +442,7 @@ while (True):
 	
 	clipboard.clipboard_append(email_format(email_list))
 	print('\n**YOUR OUTPUT IS IN THE CLIPBOARD. PASTE IT INTO YOUR TICKET.**')
-	garbage = input('Press enter to continue.')  #Pause for the user.
+	pause = input('Press enter to continue.')
 
 	os.system('clear') #clears a terminal/powershell screen
 	#os.system('cls')  #clears the cmd screen [Windows]

@@ -1,0 +1,12 @@
+Role Name,Role Description,Region,Business Group,Role Owner - General,Role Owner - North America,Role Owner - South America,Role Owner - Europe,Role Owner - Austrailia,Role Owner - Asia,Role Owner - Micronesia
+AA:ROLE_DISP_COMP3,Role Description 1 - Company 3,General,Company 3 Group 1,Approver One,N/A,N/A,N/A,N/A,N/A,N/A
+BA:ROLE_AUTH_COMP3,Role Description 2 - Company 3,General,Company 3 Group 2,Approver Two,N/A,N/A,N/A,N/A,N/A,N/A
+BAB:ROLE-STUFF_DESC_DISPEU_COMP3,Role Description 3 - Company 3,General,Company 3 Group 3,Approver Three,N/A,N/A,N/A,N/A,N/A,N/A
+BBB:REQUEST_STUFF_COMP3,Role Description 4 - Company 3,General,Company 3 Group 4,Approver Four,N/A,N/A,N/A,N/A,N/A,N/A
+BB:ROLE_COMP3_RNDNUM_123ABC,Role Description 5 - Company 3,General,Company 3 Group 5,Approver Five,N/A,N/A,N/A,N/A,N/A,N/A
+CC:ROLE_METRICS_COMP3,Role Description 6 - Company 3,General,Company 3 Group 6,Approver Six,N/A,N/A,N/A,N/A,N/A,N/A
+S_ROLE_COMMON_GLOBAL_COMP3,Role Description 7 - Company 3,General,Company 3 Group 7,Approver Seven,N/A,N/A,N/A,N/A,N/A,N/A
+S_ROLE_DISPLAY_GLOBAL_COMP3,Role Description 8 - Company 3,General,Company 3 Group 8,Approver Eight,N/A,N/A,N/A,N/A,N/A,N/A
+S_ROLE_IT_COMMON_GLOBAL_COMP3,Role Description 9 - Company 3,General,Company 3 Group 9,Approver Nine,N/A,N/A,N/A,N/A,N/A,N/A
+TTT:DESCRIPTIONS_COMP3,Role Description 10 - Company 3 - Approver 1,General,Company 3 Group 1,Approver One,N/A,N/A,N/A,N/A,N/A,N/A
+YYY:ROLE-TRANSFER_COMP3,Role Description 11 - Company 3 - Approver 2,General,Company 3 Group 2,Approver Two,N/A,N/A,N/A,N/A,N/A,N/A

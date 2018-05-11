@@ -1,0 +1,21 @@
+Role Name,Role Description,Region,Business Group,Role Owner - General,Role Owner - North America,Role Owner - South America,Role Owner - Europe,Role Owner - Austrailia,Role Owner - Asia,Role Owner - Micronesia
+AA:DISPLAY-AUSTRALIA,Role Description 1 -- Company 1,Australia,Finance,N/A,N/A,N/A,N/A,Approver One,N/A,N/A
+EE:ABC_DISPLAY_PRODUCT,Role Description 2 -- Company 1,North America,EH&S,N/A,Approver Two,N/A,N/A,N/A,N/A,N/A
+MM:BACKMOUNTAIN_ALL,Role Description 7 -- Company 1,Micronesia,Data,N/A,N/A,N/A,N/A,N/A,N/A,Approver Seven
+MMM:AA_BB-FIELD,Role Description 3 - Company 1 – Regional,Regional,Data,N/A,Approver Three,Approver Four,Approver Five,Approver Six,Approver Seven,Approver Eight
+MMM:AA_NORTH,Role Description 4 -- Company 1,North America,Data,N/A,Approver Four,N/A,N/A,N/A,N/A,N/A
+MMM:AA_NORTH_DISPLAY,Role Description 5 -- Company 1,Europe,Data,N/A,N/A,N/A,Approver Five,N/A,N/A,N/A
+MMM:CHANGE_DISPLAY_FIRST,Role Description 6 - Company 1 – Regional,Regional,Data,N/A,Approver Three,Approver Four,Approver Five,Approver Six,Approver Seven,Approver Eight
+PQ:AA12345,Role Description 11 - Company 1,North America,Finance,N/A,Approver Two,N/A,N/A,N/A,N/A,N/A
+PQ:ANALYSIS,Role Description 8 -- Company 1 – DNA,Do Not Assign,Finance,N/A,Do Not Assign,Do Not Assign,Do Not Assign,Do Not Assign,Do Not Assign,Do Not Assign
+PQ:ANALYSIS-AUSTRALIA,Role Description 9 -- Company 1,Australia,Finance,N/A,N/A,N/A,N/A,Approver Nine,N/A,N/A
+PQ:CHANGE-DOCUMENTS-ARGENTINA,Role Description 10 - Company 1,South America,Finance,N/A,N/A,Approver Ten,N/A,N/A,N/A,N/A
+PQR:12345,Role Description 12 - Company 1 – Approver Three,North America,Finance,N/A,Approver Three,N/A,N/A,N/A,N/A,N/A
+S_AAA_COMMON_REGIONAL,Role Description 13 - Company 1 – Regional,Regional,IT,N/A,Approver Three,Approver Four,Approver Five,Approver Six,Approver Seven,Approver Eight
+STU_HOME_STUDENT,Role Description 15 - Company 1 – DNA,Do Not Assign,Do Not Assign,Do Not Assign,Do Not Assign,Do Not Assign,Do Not Assign,Do Not Assign,Do Not Assign,Do Not Assign
+T_12345678_AAA:OFFICE,Role Description 16 - Company 1 – Approver One,General,Administration,Approver One,N/A,N/A,N/A,N/A,N/A,N/A
+YXY:AA3-AA6-CUSTOMER-STUFF,Role Description 19 - Company 1 – Approver Five,Asia,Management,N/A,N/A,N/A,N/A,N/A,Approver Five,N/A
+YYY:R&D-TECH-TREE-INFO-NEPOLEON,Role Description 18 - Company 1 – Approver Three,North America,Supply,N/A,Approver Three,N/A,N/A,N/A,N/A,N/A
+YZZ:CHECK-YOUR-CODE,Role Description 17 - Company 1 – Approver Two,North America,Finance,N/A,Approver Two,N/A,N/A,N/A,N/A,N/A
+Z:THE-911-TESTER,Role Description 20 - Company 1 – Approver One,General,IT,Approver One,N/A,N/A,N/A,N/A,N/A,N/A
+Z_AAA_BB_DISPLAY_REGIONAL,Role Description 14 - Company 1 – Regional,Regional,Audit,N/A,Approver Three,Approver Four,Approver Five,Approver Six,Approver Seven,Approver Eight
