@@ -1,231 +1,14 @@
 '''
-	Title:  SAP Security Interactive tool 1.2
+	Title:  SAP Security Interactive tool 1.3
 	Author:  Joe Friedrich
 	License:  MIT
 '''
 
 print('Importing libraries')
-import csv
-import re
 import os
+import pyperclip
+from company import Company
 from sys import stdin
-from collections import namedtuple
-from datetime import date
-from tkinter import Tk
-
-#------------------Begin Company Class----------------------------------------
-class Company:
-	def __init__(self, name, folder_path, regular_expression, clients):
-		self.name = name
-		self.folder_path = folder_path #location of .csv files
-		self.role_format = re.compile(regular_expression)
-		self.clients = clients
-		self.vacation_lookup = self.load_vacations()
-		self.region_lookup = self.load_regions()
-		self.role_lookup = self.load_roles()
-		self.email_lookup = self.load_emails()
-		self.single_approver_lookup = self.load_single_approvers()
-
-
-	def load_regions(self):
-		'''   *** Rewrite ***  if we put this into 'load roles', we can take the file
-						loading process out and make another function
-			This grabs the header contents of the Roles .csv file.
-			It returns all entries after the first 4.
-			These are the headings that correspond with the companies regions.
-		'''
-		role_file = open(self.folder_path + '/Roles.csv')
-		role_data = csv.reader(role_file)
-		header_text = role_data.__next__()
-		role_file.close()
-		
-		return header_text[4:]
-
-
-	def vacation_check(self, names):
-		'''
-			Takes a list of strings (names)
-			For each name in names, 
-				it looks for name in vacation_lookup (list of tuples).
-				If the name is there,
-					checks the date against the dates in vacation_lookup.
-				If both of these check out,
-					it replaces name with the name in vacation_lookup.
-			Returns a list of strings (checked_names)
-		'''	
-		checked_names = []
-		for name in names:
-			for vacation in self.vacation_lookup:
-				if name == None: 
-					break
-				elif name == vacation.standard:
-					if vacation.start <= date.today() <= vacation.finish:
-						name = vacation.replacement
-						break
-			checked_names.append(name)
-		return checked_names
-
-
-	def load_approvers(self, row):
-		'''
-			Takes the row and a blank approvers list.
-			Approvers occur row[4] and beyond.
-			Fills the approvers list with all approvers in the row 
-				when row[2] is Regional.
-			Otherwise, only grabs the first approver it finds.
-		'''
-		approvers = []
-		if row[2] == 'Regional':
-			approvers = row[4: 4 + len(self.region_lookup)]
-		else:
-			for approver in row[4:4 + len(self.region_lookup)]:
-				if approver != 'N/A':
-					approvers.append(approver)
-					break
-		return self.vacation_check(approvers)
-
-	
-	def load_roles(self):
-		'''   ***REWRITE***   Consider pulling (load regions into this) ***
-			This creates a list of tuples that contain
-				the role name.
-				the role definition.
-				and a list of the role approvers (created by load_approvers).
-			This information comes from the Roles.csv file.
-		'''
-		print('Loading lookup dictionary...')
-		
-		role_file = open(self.folder_path + '/Roles.csv')
-		role_reader = csv.reader(role_file)
-		role_data = list(role_reader)
-		role_file.close()
-		
-		role = namedtuple('role',
-						'name description approvers')
-		role_list = []
-		for row in role_data:
-			if row[0] in ('', None):
-				print('Issue with a row.')   #Can we pull row data?
-				break
-			role_data = role(row[0], row[1],
-						self.load_approvers(row))
-			role_list.append(role_data)
-		
-		return role_list
-
-
-	def load_emails(self):
-		''' 
-			Creates a dictionary from the information in the Email.csv file.
-		'''
-		email_file = open(self.folder_path + '/Email.csv')
-		email_reader = csv.reader(email_file)
-		email_data = list(email_reader)
-		email_file.close()
-		
-		emails = {}
-		for row in email_data:
-			emails[row[0]] = row[1]
-		
-		return emails
-
-
-	def load_vacations(self):
-		''' 
-			Creates a list of tuples from the information in the Vacations.csv
-			file.
-		'''		
-		vacation_file = open(self.folder_path + '/Vacations.csv')
-		vacation_reader = csv.reader(vacation_file)
-		vacation_data = list(vacation_reader)
-		vacation_file.close()
-		
-		garbage = vacation_data.pop(0) #remove header
-		date_format = re.compile(r'\d+')
-		
-		vacation = namedtuple('vacation',
-				'standard replacement start finish')
-		vacation_list = []
-		for row in vacation_data:
-			find_date = date_format.findall(row[2])
-			start_date = date(int(find_date[2]), 
-							int(find_date[0]), 
-							int(find_date[1]))
-			
-			find_date = date_format.findall(row[3])
-			finish_date = date(int(find_date[2]), 
-							int(find_date[0]), 
-							int(find_date[1]))
-			
-			vacation_tuple = vacation(row[0],
-								row[1],
-								start_date,
-								finish_date)
-			vacation_list.append(vacation_tuple)
-		return vacation_list
-
-
-	def load_single_approvers(self):
-		'''
-			Creates a list of tuples from the information in the Singles.csv
-			file.
-		'''
-		single_file = open(self.folder_path + '/Singles.csv')
-		single_reader = csv.reader(single_file)
-		single_data = list(single_reader)
-		single_file.close()
-		
-		single_approver = namedtuple('single_Approver',
-				'menu_name client client_name approver role_text')
-		single_approver_list = []
-		for row in single_data:
-			single_approver_tuple = single_approver(row[0],
-											row[1],
-											row[2],
-											row[3],
-											row[4])
-			single_approver_list.append(single_approver_tuple)
-		
-		title_row = single_approver_list.pop(0) #removes title row
-		return single_approver_list
-
-
-	def find_and_sort_roles(self, user_input, user_region):
-		'''
-			Takes a list of strings (user_input) and an int user_region.
-			It filters each string of user_input through that companies regex.
-			[It forces the input string to be all uppercase letters.]
-			Takes the results of that filter and 
-				tries to find it in that company's role_lookup.
-			If it is a Regional role, the lenght of appovers will be > 1.
-			
-			***Rewrite***  Need to separate this functionality out for 
-							greater flexability.
-				Collects tuples (name, description, approver).
-			Returns the list of tuples sorted by approver name.
-		'''
-		roles_and_approvers = []
-		for line in user_input:
-			find_role = self.role_format.search(line.upper())
-			role_not_found = True
-			if(find_role != None):
-				for row in self.role_lookup:
-					if find_role.group() == row.name:
-						if len(row.approvers) > 1:
-							roles_and_approvers.append((row.name,
-											row.description, 
-											row.approvers[user_region]))
-						else:
-							roles_and_approvers.append((row.name, 
-											row.description, 
-											row.approvers[0]))
-						role_not_found = False
-				if role_not_found:
-					print('\nRole ' + find_role.group() + ' was not found.')
-		return sorted(roles_and_approvers, key = lambda entry: entry[2])
-
-		
-#---------------------------End Company Class---------------------------------
 
 def get_menu(list_of_things):
 	'''
@@ -282,6 +65,44 @@ def get_role_input():
 	'''
 	return stdin.readlines()
 
+def find_and_sort_roles(company, user_input):
+	'''
+		Takes a list of strings (user_input) and an int user_region.
+		It filters each string of user_input through that companies regex.
+		[It forces the input string to be all uppercase letters.]
+		Takes the results of that filter and 
+			tries to find it in that company's role_lookup.
+		If it is a Regional role, the lenght of appovers will be > 1.
+			Collects tuples (name, description, approver).
+		Returns the list of tuples sorted by approver name.
+	'''
+	user_region = -1
+	roles_and_approvers = []
+	for line in user_input:
+		find_role = company.role_format.search(line.upper())
+		role_not_found = True
+		if(find_role != None):
+			for row in company.role_lookup:
+				if find_role.group() == row.name:
+					if len(row.approvers) > 1:
+						if user_region < 0:
+							print('\nIn which region does the user work?')
+							select_region = get_menu(company.region_lookup)
+							while select_region == 0:
+								print('\nPlease select a valid region.  You cannot quit from here.\n')
+								select_region = get_menu(company.region_lookup)
+							user_region = select_region - 1
+						roles_and_approvers.append((row.name,
+										row.description, 
+										row.approvers[user_region]))
+					else:
+						roles_and_approvers.append((row.name, 
+										row.description, 
+										row.approvers[0]))
+					role_not_found = False
+			if role_not_found:
+				print('\r\nRole ' + find_role.group() + ' was not found.')
+	return sorted(roles_and_approvers, key = lambda entry: entry[2])
 	
 def parse_role_tuples(output, company, clipboard):
 	'''
@@ -307,8 +128,7 @@ def parse_role_tuples(output, company, clipboard):
 			current_approver = role_tuple[2]
 			print('\n' + user_client +
 					' -- awaiting approval from ' + current_approver)
-			clipboard.clipboard_append('\n' + user_client +
-					' -- awaiting approval from ' + current_approver + '\n')
+			clipboard += '\r\n' + user_client + ' -- awaiting approval from ' + current_approver + '\r\n'
 			if current_approver not in approvers_without_email:
 				if current_approver in company.email_lookup:
 					approver_emails.append(company.email_lookup[
@@ -317,8 +137,7 @@ def parse_role_tuples(output, company, clipboard):
 					approver_emails.append(current_approver +
 											"'s email is missing")
 		print(role_tuple[0] + '\t ' + role_tuple[1])
-		clipboard.clipboard_append(role_tuple[0] + '\t ' + 
-									role_tuple[1] + '\n')
+		clipboard += role_tuple[0] + '\t ' + role_tuple[1] + '\r\n'
 	return approver_emails, clipboard
 
 	
@@ -348,9 +167,7 @@ def single_approvers(company, email_list, clipboard):
 		print('\n' + selected_client[1] + ' -- ' + selected_client[2] +
 				' -- awaiting approval from ' + current_approver + '\n' +
 				selected_client[4])
-		clipboard.clipboard_append('\n' + selected_client[1] + ' -- ' + 
-				selected_client[2] + ' -- awaiting approval from ' + current_approver +
-				'\n' + selected_client[4] + '\n')
+		clipboard += '\r\n' + selected_client[1] + ' -- ' + selected_client[2] + ' -- awaiting approval from ' + current_approver + '\r\n' + selected_client[4] + '\r\n'
 
 		#need a check for multiple email approvers
 		if current_approver in company.email_lookup: 
@@ -368,14 +185,13 @@ def email_format(email_list):
 	'''
 	email_output = ''
 	email_separator_character = ','
-	clean_last_separator = -1 * len(email_separator_character)
-	
-	#make this a list comprehension
+	clean_email = -1 * len(email_separator_character)
+
 	for email in email_list:
 		email_output += email + email_separator_character
 	
-	print('\n' + email_output[:clean_last_separator] + '\n')
-	return str('\n' + email_output[:clean_last_separator] + '\n')	
+	print('\r\n' + email_output[:clean_email] + '\r\n')
+	return str('\r\n' + email_output[:clean_email] + '\r\n')	
 
 	
 #--------------------------End Local Functions--------------------------------
@@ -395,42 +211,34 @@ company3 = Company('Company3',
 			['ProdC3', 'QaC3', 'ProdC3/QaC3', 'DevC3', 'QaC3/DevC3'])
 
 list_companies = [company1, company2, company3]
-
 company_names = [company.name for company in list_companies]
-
-clipboard = Tk()
-clipboard.withdraw() #removes Tk window that is not needed at this time.
-#need a way to bring focus back to the cmd window in which this is running
 
 #----------------------------Begin Program------------------------------------
 while (True):
 	print('\n************Welcome to the SAP Access Request Tool************')
-	print('To which company does the user belong?')
-	select_company = get_menu(company_names)
-	if select_company == 0:
-		clipboard.destroy()
-		break
-	company = list_companies[select_company - 1]
+	if len(company_names) == 1:
+		print('This request is for ' + company_names[0] + '.')
+		company = list_companies[0]
+	else:
+		print('To which company does the user belong?')
+		select_company = get_menu(company_names)
+		if select_company == 0:
+			break
+		company = list_companies[select_company - 1]
 	
-	print('\nIn which region does the user work?')
-	select_region = get_menu(company.region_lookup)
-	if select_region == 0:
-		clipboard.destroy()
-		break
-	region = select_region - 1
-	
-	print("\nPaste the roles in, hit Ctrl+D (Ctrl+Z and Enter for Windows).")
+	print("\nPaste the roles in, one per line.")
+	print("On a new line, hit Ctrl+Z and Enter to continue.")
 	requested_roles = get_role_input()
 	
-	role_tuples = company.find_and_sort_roles(requested_roles, region)
+	role_tuples = find_and_sort_roles(company, requested_roles)
 	
-	clipboard.clipboard_clear() #Clears the clipboard.  New data coming.
+	clipboard = ''
+	pyperclip.copy(clipboard) #Clears the clipboard.  New data coming.
 	
 	if requested_roles != []:
 		print('\nIn which SAP client does the user want the access?')
 		select_client = get_menu(company.clients)
 		if select_client == 0:
-			clipboard.destroy()
 			break
 		user_client = company.clients[select_client - 1]
 	
@@ -440,7 +248,8 @@ while (True):
 	
 	email_list, clipboard = single_approvers(company, email_list, clipboard)
 	
-	clipboard.clipboard_append(email_format(email_list))
+	clipboard += email_format(email_list)
+	pyperclip.copy(clipboard)
 	print('\n**YOUR OUTPUT IS IN THE CLIPBOARD. PASTE IT INTO YOUR TICKET.**')
 	pause = input('Press enter to continue.')
 
